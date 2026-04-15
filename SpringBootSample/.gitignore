@@ -1,0 +1,14 @@
+# Eclipseの設定ファイル
+.settings/
+.project
+.classpath
+
+# ビルド成果物
+target/
+*.class
+
+# Mavenの設定
+.mvn/
+
+# ログファイル
+*.log
