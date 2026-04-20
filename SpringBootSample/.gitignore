@@ -1,6 +1,5 @@
 # Eclipseの設定ファイル
 .settings/
-.project
 .classpath
 
 # ビルド成果物
@@ -22,7 +21,6 @@ target/
 .apt_generated
 .classpath
 .factorypath
-.project
 .settings
 .springBeans
 .sts4-cache
