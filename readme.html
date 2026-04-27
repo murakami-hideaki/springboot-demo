@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spring Batch　サンプルドキュメント | BatchSample</title>
+  <style>
+    :root {
+      --primary: #1a237e;
+      --primary-light: #3949ab;
+      --accent: #00897b;
+      --accent-light: #4db6ac;
+      --bg: #f5f6fa;
+      --card: #ffffff;
+      --text: #212121;
+      --text-sub: #546e7a;
+      --border: #e0e0e0;
+      --code-bg: #263238;
+      --code-text: #cfd8dc;
+      --warn: #e65100;
+      --warn-bg: #fff3e0;
+      --danger: #b71c1c;
+      --danger-bg: #ffebee;
+      --success: #2e7d32;
+      --success-bg: #e8f5e9;
+      --info: #01579b;
+      --info-bg: #e1f5fe;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 60%, var(--accent) 100%);
+      color: white;
+      padding: 48px 0 36px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 1rem;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+
+    header .meta {
+      margin-top: 20px;
+      font-size: 0.85rem;
+      opacity: 0.7;
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    nav {
+      background: var(--primary);
+      padding: 0 40px;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    nav a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      padding: 14px 20px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: all 0.2s;
+      border-bottom: 3px solid transparent;
+    }
+
+    nav a:hover {
+      color: white;
+      border-bottom-color: var(--accent-light);
+      background: rgba(255,255,255,0.08);
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 24px 80px;
+    }
+
+    section { margin-bottom: 48px; }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--primary-light);
+    }
+
+    .section-number {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 1.4rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 28px 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      color: var(--primary-light);
+      margin-bottom: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h3::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .alert {
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .alert-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+
+    .alert-warn { background: var(--warn-bg); border-left: 4px solid var(--warn); }
+    .alert-warn .alert-title { color: var(--warn); font-weight: 700; margin-bottom: 4px; }
+
+    .alert-danger { background: var(--danger-bg); border-left: 4px solid var(--danger); }
+    .alert-danger .alert-title { color: var(--danger); font-weight: 700; margin-bottom: 4px; font-size: 1rem; }
+
+    .alert-success { background: var(--success-bg); border-left: 4px solid var(--success); }
+    .alert-success .alert-title { color: var(--success); font-weight: 700; margin-bottom: 4px; }
+
+    .alert-info { background: var(--info-bg); border-left: 4px solid var(--info); }
+    .alert-info .alert-title { color: var(--info); font-weight: 700; margin-bottom: 4px; }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: 8px;
+      padding: 20px 24px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      margin: 12px 0;
+    }
+
+    code {
+      background: #eceff1;
+      color: #c62828;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.88em;
+    }
+
+    pre code { background: none; color: inherit; padding: 0; }
+
+    .code-label {
+      background: var(--primary-light);
+      color: white;
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 6px 6px 0 0;
+      display: inline-block;
+      margin-bottom: -4px;
+      font-family: 'Consolas', monospace;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.93rem;
+    }
+
+    th {
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td { background: #f9fafb; }
+    tr:hover td { background: #e8eaf6; }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0;
+      margin: 20px 0;
+    }
+
+    .flow-box {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    .flow-box.accent { background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
+    .flow-box.gray { background: linear-gradient(135deg, #546e7a, #78909c); }
+
+    .flow-arrow {
+      color: var(--primary-light);
+      font-size: 1.4rem;
+      padding: 0 8px;
+      font-weight: 700;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.6rem; }
+      nav { padding: 0 16px; }
+    }
+
+    .anno {
+      display: inline-block;
+      background: #e8eaf6;
+      color: var(--primary);
+      border: 1px solid #9fa8da;
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.88em;
+      font-weight: 600;
+      margin: 2px;
+    }
+
+    .option-block {
+      background: #f5f6fa;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 12px 0;
+    }
+
+    .option-block .option-name {
+      font-family: 'Consolas', monospace;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 6px;
+    }
+
+    .option-block .option-reason {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+      margin-top: 6px;
+    }
+
+    footer {
+      background: var(--primary);
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 24px;
+      font-size: 0.85rem;
+    }
+
+    p { margin-bottom: 10px; }
+    ul, ol { padding-left: 24px; margin-bottom: 10px; }
+    li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Official Technical Document</div>
+  <h1>Spring Batch サンプルドキュメント</h1>
+  <p>BatchSample プロジェクト — Spring Boot 3.5.14 / Spring Batch 5 / Java 21</p>
+  <p>PostgreSQL 17 / Maven / WSL2 Ubuntu / Eclipse (Pleiades)</p>
+  <div class="meta">
+    <span>📅 作成日：2026-04-28</span>
+    <span>📦 JAR：BatchSample.jar</span>
+    <span>🌿 Profile：dev / prod</span>
+  </div>
+</header>
+
+<nav>
+  <a href="#prerequisite">前提条件</a>
+  <a href="#overview">概要</a>
+  <a href="#architecture">アーキテクチャ</a>
+  <a href="#annotations">アノテーション</a>
+  <a href="#jobs">ジョブ定義</a>
+  <a href="#launch">起動方法</a>
+  <a href="#design-points">設計ポイント</a>
+  <a href="#files">ファイル構成</a>
+  <a href="#config">設定ファイル</a>
+</nav>
+
+<main>
+
+  <!-- 前提条件 -->
+  <section id="prerequisite">
+    <div class="section-header">
+      <div class="section-number">0</div>
+      <h2>前提条件・実行環境</h2>
+    </div>
+
+    <div class="card">
+      <h3>実行環境</h3>
+      <table>
+        <tr><th>項目</th><th>内容</th></tr>
+        <tr><td>OS（開発）</td><td>Windows 11</td></tr>
+        <tr><td>シェル実行環境</td><td>WSL2（Windows Subsystem for Linux）上の Ubuntu</td></tr>
+        <tr><td>Java（WSL内）</td><td>OpenJDK 21.0.10（Ubuntu apt でインストール）</td></tr>
+        <tr><td>データベース</td><td>PostgreSQL 17（Windows側にインストール）</td></tr>
+        <tr><td>IDE</td><td>Eclipse（Pleiades 2025-09）</td></tr>
+        <tr><td>ビルドツール</td><td>Maven（Eclipse 内蔵）</td></tr>
+        <tr><td>JAR 実行</td><td>WSL Ubuntu から <code>java -jar</code> で実行</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>WSL からの実行に関する前提事項</h3>
+      <p>本プロジェクトのシェルスクリプトは <strong>Windows 上の WSL2（Ubuntu）</strong> から実行します。JAR ファイルは Windows 側の Eclipse でビルドし、WSL から Windows のファイルシステムをマウントして実行します。</p>
+
+      <div class="alert alert-info" style="margin-top:16px;">
+        <span class="alert-icon">📁</span>
+        <div>
+          <div class="alert-title">WSL からの Windows ファイルアクセス</div>
+          <p>WSL では Windows の <code>C:\</code> ドライブが <code>/mnt/c/</code> としてマウントされます。Eclipseのワークスペースは WSL から以下のパスでアクセスできます。</p>
+          <pre><code># Windows パス
+C:\pleiades\2025-09\workspace_job_sample\BatchSample\
+
+# WSL からのパス
+/mnt/c/pleiades/2025-09/workspace_job_sample/BatchSample/</code></pre>
+        </div>
+      </div>
+
+      <div class="alert alert-warn" style="margin-top:12px;">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <div class="alert-title">WSL から Windows の PostgreSQL へ接続するための設定</div>
+          <p>WSL（Linux）から Windows 側の PostgreSQL に接続するには、以下の設定が必要でした。デフォルトでは WSL からの接続は拒否されます。</p>
+          <table style="margin-top:12px;">
+            <tr><th>設定ファイル / 手順</th><th>変更内容</th><th>理由</th></tr>
+            <tr>
+              <td><code>postgresql.conf</code></td>
+              <td><code>listen_addresses = '*'</code> に変更</td>
+              <td>デフォルトは <code>localhost</code> のみ待受。全IPからの接続を許可するため。</td>
+            </tr>
+            <tr>
+              <td><code>pg_hba.conf</code></td>
+              <td><code>host all all 0.0.0.0/0 scram-sha-256</code> を追加</td>
+              <td>WSL の IP からの接続を認証付きで許可するため。</td>
+            </tr>
+            <tr>
+              <td>接続先 IP の取得</td>
+              <td>WSL 内で <code>ip route | grep default</code> を実行</td>
+              <td>WSL から Windows ホストへの接続には <code>nameserver</code> ではなく <code>default gateway</code> の IP（172.xx.x.x 系）を使用する必要があるため。</td>
+            </tr>
+          </table>
+          <p style="margin-top:10px;">シェルスクリプト内で以下のコマンドにより実行時に自動取得しています。</p>
+          <pre><code>WINDOWS_HOST=$(ip route | grep default | awk '{print $3}')</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. 概要 -->
+  <section id="overview">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2>プロジェクト概要</h2>
+    </div>
+
+    <div class="card">
+      <p>本プロジェクト <strong>BatchSample</strong> は、Spring Boot 3.5.14 と Spring Batch 5 を用いて構築したバッチ処理基盤のサンプル実装です。1つのJARファイルに以下の3つの役割を統合し、起動引数によって動作モードを切り替えます。</p>
+
+      <table>
+        <tr>
+          <th>#</th>
+          <th>役割</th>
+          <th>ジョブ名</th>
+          <th>起動方法</th>
+        </tr>
+        <tr>
+          <td>①</td>
+          <td>常駐スケジューラー（ジョブ要求監視）</td>
+          <td>—</td>
+          <td>引数なしで起動</td>
+        </tr>
+        <tr>
+          <td>②</td>
+          <td>JP1から直接起動されるバッチジョブ</td>
+          <td><code>helloJP1Job</code></td>
+          <td>ジョブ名を引数で指定</td>
+        </tr>
+        <tr>
+          <td>③</td>
+          <td>スケジューラーから起動されるバッチジョブ</td>
+          <td><code>helloScheduledJob</code></td>
+          <td>①のスケジューラーが自動起動</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Spring Batch メタテーブルについて</h3>
+      <p>Spring Batch は実行履歴を管理するためのメタテーブル（<code>BATCH_JOB_INSTANCE</code>、<code>BATCH_JOB_EXECUTION</code>、<code>BATCH_STEP_EXECUTION</code> 等）を使用します。本プロジェクト（開発環境）では <code>spring.batch.jdbc.initialize-schema=always</code> を設定し、PostgreSQL に自動生成させています。ジョブのリラン制御は <code>RunIdIncrementer</code> により対応しています。</p>
+
+      <div class="alert alert-danger" style="margin-top: 16px;">
+        <span class="alert-icon">🚨</span>
+        <div>
+          <div class="alert-title">【本番環境への注意事項】initialize-schema は必ず never に変更すること</div>
+          <p><code>spring.batch.jdbc.initialize-schema=always</code> のまま本番環境で運用すると、起動のたびにメタテーブルの再作成が試みられ、既存の実行履歴データが失われるリスクがあります。</p>
+          <p style="margin-top: 8px;"><strong>本番環境では以下の手順に従うこと：</strong></p>
+          <ol style="margin-top: 8px;">
+            <li>本番 PostgreSQL に対して Spring Batch の DDL スクリプト（<code>schema-postgresql.sql</code>）を使用し、メタテーブルを手動で作成する。</li>
+            <li><code>application-prod.yml</code> に <code>spring.batch.jdbc.initialize-schema: never</code> を設定する。</li>
+            <li>テーブルが存在しない状態で <code>never</code> を指定すると起動時エラーになるため、必ずテーブル作成後に設定すること。</li>
+          </ol>
+          <pre style="margin-top:10px;"><code># application-prod.yml
+spring:
+  batch:
+    jdbc:
+      initialize-schema: never  # 本番では必ず never！</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. アーキテクチャ -->
+  <section id="architecture">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2>全体アーキテクチャ</h2>
+    </div>
+
+    <div class="card">
+      <h3>常駐スケジューラーモード（引数なし起動）</h3>
+      <div class="flow">
+        <div class="flow-box">run_batch.sh<br><small>引数なし</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">BatchSampleApplication<br><small>Spring Boot 起動</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box accent">JobScheduler<br><small>@Scheduled 5秒ごと</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box accent">helloScheduledJob<br><small>JobLauncher 起動</small></div>
+      </div>
+      <p style="margin-top:8px; color: var(--text-sub); font-size:0.9rem;">※ 将来的にはジョブ要求テーブルを参照し、<code>ApplicationContext.getBean(jobName, Job.class)</code> で動的にジョブ名とパラメータを取得して起動する設計に拡張予定。</p>
+    </div>
+
+    <div class="card">
+      <h3>JP1バッチモード（ジョブ名指定起動）</h3>
+      <div class="flow">
+        <div class="flow-box gray">JP1<br><small>ジョブ定義</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">run_batch.sh<br><small>ジョブ名を引数で指定</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">BatchSampleApplication<br><small>Spring Boot 起動</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box accent">helloJP1Job<br><small>1回実行して終了</small></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. アノテーション -->
+  <section id="annotations">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2>主要アノテーション解説</h2>
+    </div>
+
+    <div class="card">
+      <p>本プロジェクトの要件に直接関係するアノテーションを解説します。</p>
+      <table>
+        <tr>
+          <th>アノテーション</th>
+          <th>付与クラス</th>
+          <th>役割・説明</th>
+        </tr>
+        <tr>
+          <td><span class="anno">@EnableScheduling</span></td>
+          <td><code>BatchSampleApplication</code></td>
+          <td>Spring のスケジューリング機能をアプリケーション全体で有効化する。このアノテーションがないと <code>@Scheduled</code> は一切動作しない。アプリ内で1箇所だけ付与すれば十分。</td>
+        </tr>
+        <tr>
+          <td><span class="anno">@Scheduled</span></td>
+          <td><code>JobScheduler</code></td>
+          <td>メソッドを定期実行するアノテーション。<code>fixedDelay = 5000</code> は前回実行の<strong>完了から</strong>5秒後に次の実行を開始する。<code>fixedRate</code> と異なり処理の重複が発生しないため、バッチ処理に適している。</td>
+        </tr>
+        <tr>
+          <td><span class="anno">@Qualifier</span></td>
+          <td><code>JobScheduler</code></td>
+          <td>同じ型（<code>Job</code>）の Bean が <code>helloJP1Job</code> と <code>helloScheduledJob</code> の2つ存在するため、<code>@Autowired</code> 時にどちらを注入するかを名前で明示的に指定する。指定しないと Spring が注入先を判断できずエラーになる。</td>
+        </tr>
+        <tr>
+          <td><span class="anno">@ConditionalOnProperty</span></td>
+          <td><code>JobScheduler</code></td>
+          <td>指定したプロパティ値に応じて Bean の生成自体を制御する。<code>scheduler.enabled=false</code> を渡すと <code>JobScheduler</code> Bean が生成されず、<code>@Scheduled</code> が動かなくなる。JP1バッチモードでスケジューラーを止めるために使用。</td>
+        </tr>
+        <tr>
+          <td><span class="anno">@Configuration</span></td>
+          <td><code>BatchConfig</code></td>
+          <td>Spring の設定クラスであることを示す。<code>@Bean</code> メソッドでジョブ・ステップを定義する。</td>
+        </tr>
+        <tr>
+          <td><span class="anno">@Component</span></td>
+          <td><code>HelloTasklet</code> 他</td>
+          <td>Spring の DI コンテナにコンポーネントとして登録する。<code>@Autowired</code> による自動注入が可能になる。</td>
+        </tr>
+        <tr>
+          <td><span class="anno">@Slf4j</span></td>
+          <td><code>JobScheduler</code> 他</td>
+          <td>Lombok が提供するアノテーション。クラスに付与するだけで <code>log.info()</code> / <code>log.error()</code> 等が使えるようになる。</td>
+        </tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. ジョブ定義 -->
+  <section id="jobs">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2>ジョブ定義</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>helloJP1Job（JP1起動ジョブ）</h3>
+        <table>
+          <tr><th>項目</th><th>値</th></tr>
+          <tr><td>ジョブ名</td><td><code>helloJP1Job</code></td></tr>
+          <tr><td>ステップ名</td><td><code>helloJP1Step</code></td></tr>
+          <tr><td>Tasklet</td><td><code>HelloTasklet</code></td></tr>
+          <tr><td>出力メッセージ</td><td><code>===== Hello from JP1 Job! =====</code></td></tr>
+          <tr><td>起動方法</td><td>シェル引数でジョブ名指定</td></tr>
+          <tr><td>インクリメンター</td><td><code>RunIdIncrementer</code></td></tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>helloScheduledJob（スケジューラー起動ジョブ）</h3>
+        <table>
+          <tr><th>項目</th><th>値</th></tr>
+          <tr><td>ジョブ名</td><td><code>helloScheduledJob</code></td></tr>
+          <tr><td>ステップ名</td><td><code>helloScheduledStep</code></td></tr>
+          <tr><td>Tasklet</td><td><code>HelloScheduledTasklet</code></td></tr>
+          <tr><td>出力メッセージ</td><td><code>===== Hello from Scheduled Job! =====</code></td></tr>
+          <tr><td>起動方法</td><td>JobScheduler が5秒ごとに自動起動</td></tr>
+          <tr><td>インクリメンター</td><td><code>RunIdIncrementer</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>BatchConfig.java — ジョブ・ステップ定義コード</h3>
+      <div class="code-label">BatchConfig.java</div>
+      <pre><code>@Configuration
+public class BatchConfig {
+
+    // ② JP1から起動されるジョブ
+    @Bean
+    public Step helloJP1Step(JobRepository jobRepository,
+                              PlatformTransactionManager transactionManager,
+                              HelloTasklet helloTasklet) {
+        return new StepBuilder("helloJP1Step", jobRepository)
+                .tasklet(helloTasklet, transactionManager)
+                .build();
+    }
+
+    @Bean
+    public Job helloJP1Job(JobRepository jobRepository, Step helloJP1Step) {
+        return new JobBuilder("helloJP1Job", jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .start(helloJP1Step)
+                .build();
+    }
+
+    // ③ @Scheduled から起動されるジョブ
+    @Bean
+    public Step helloScheduledStep(JobRepository jobRepository,
+                                    PlatformTransactionManager transactionManager,
+                                    HelloScheduledTasklet helloScheduledTasklet) {
+        return new StepBuilder("helloScheduledStep", jobRepository)
+                .tasklet(helloScheduledTasklet, transactionManager)
+                .build();
+    }
+
+    @Bean
+    public Job helloScheduledJob(JobRepository jobRepository, Step helloScheduledStep) {
+        return new JobBuilder("helloScheduledJob", jobRepository)
+                .incrementer(new RunIdIncrementer())
+                .start(helloScheduledStep)
+                .build();
+    }
+}</code></pre>
+    </div>
+  </section>
+
+  <!-- 5. 起動方法 -->
+  <section id="launch">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <h2>起動方法（コマンドレベル）</h2>
+    </div>
+
+    <div class="card">
+      <h3>常駐スケジューラーモード（引数なし）</h3>
+      <p>ジョブ要求テーブルを監視し続ける常駐プロセスとして起動します。<code>@Scheduled</code> が有効になり、5秒ごとに <code>helloScheduledJob</code> が実行されます。</p>
+
+      <div class="code-label">コマンド</div>
+      <pre><code>./run_batch.sh</code></pre>
+
+      <div class="code-label">内部で実行される java コマンド</div>
+      <pre><code>java -jar BatchSample.jar \
+  --spring.profiles.active=dev \
+  --spring.datasource.url=jdbc:postgresql://172.24.0.1:5432/batch_db \
+  --spring.batch.job.enabled=false \
+  --scheduler.enabled=true</code></pre>
+
+      <p style="margin-top: 16px; font-weight: 700; color: var(--primary);">各オプションの背景・理由</p>
+
+      <div class="option-block">
+        <div class="option-name">--spring.batch.job.enabled=false</div>
+        <div class="option-reason">
+          Spring Boot はデフォルトで起動時にコンテキスト内の全 Job Bean を自動実行しようとします。常駐スケジューラーモードでは <code>@Scheduled</code> によって Job を制御したいため、起動時の自動実行を明示的に無効化しています。これがないと起動直後に全 Job が実行されてしまいます。
+        </div>
+      </div>
+
+      <div class="option-block">
+        <div class="option-name">--scheduler.enabled=true</div>
+        <div class="option-reason">
+          <code>JobScheduler</code> クラスに <code>@ConditionalOnProperty(name = "scheduler.enabled", havingValue = "true", matchIfMissing = true)</code> を付与しているため、このプロパティが <code>true</code> のときだけ <code>JobScheduler</code> Bean が生成されます。省略時のデフォルトも <code>true</code>（<code>matchIfMissing = true</code>）のため、常駐モードでは明示的に指定しています。
+        </div>
+      </div>
+
+      <div class="option-block">
+        <div class="option-name">--spring.profiles.active=dev</div>
+        <div class="option-reason">
+          <code>application-dev.yml</code> の DB 接続設定を読み込むためのプロファイル指定です。本番では JP1 の環境変数 <code>SPRING_PROFILES_ACTIVE=prod</code> で切り替えます。
+        </div>
+      </div>
+
+      <div class="option-block">
+        <div class="option-name">--spring.datasource.url=jdbc:postgresql://172.24.0.1:5432/batch_db</div>
+        <div class="option-reason">
+          WSL から Windows 側の PostgreSQL に接続するために、Windows ホストの IP アドレスを指定しています。<code>localhost</code> では WSL 自身を指してしまい接続できません。IP はシェルスクリプト内で <code>ip route | grep default</code> コマンドにより自動取得しています。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>JP1バッチモード（ジョブ名指定）</h3>
+      <p>指定したジョブを1回だけ実行して終了します。スケジューラーは起動しません。</p>
+
+      <div class="code-label">コマンド</div>
+      <pre><code>./run_batch.sh helloJP1Job</code></pre>
+
+      <div class="code-label">内部で実行される java コマンド</div>
+      <pre><code>java -jar BatchSample.jar \
+  --spring.profiles.active=dev \
+  --spring.datasource.url=jdbc:postgresql://172.24.0.1:5432/batch_db \
+  --spring.batch.job.enabled=true \
+  --spring.batch.job.name=helloJP1Job \
+  --scheduler.enabled=false</code></pre>
+
+      <p style="margin-top: 16px; font-weight: 700; color: var(--primary);">各オプションの背景・理由</p>
+
+      <div class="option-block">
+        <div class="option-name">--spring.batch.job.enabled=true</div>
+        <div class="option-reason">
+          起動時に指定したジョブを自動実行するために <code>true</code> を指定します。<code>false</code> のままだと JAR は起動するだけでジョブが実行されず、そのまま終了してしまいます。
+        </div>
+      </div>
+
+      <div class="option-block">
+        <div class="option-name">--spring.batch.job.name=helloJP1Job</div>
+        <div class="option-reason">
+          JAR の中には複数の Job Bean（<code>helloJP1Job</code>、<code>helloScheduledJob</code>）が含まれています。このオプションで実行対象のジョブ名を明示的に指定しないと、全ての Job が実行されてしまいます。JP1 からはジョブ名を引数としてシェルに渡し、シェルがこのオプションに設定します。
+        </div>
+      </div>
+
+      <div class="option-block">
+        <div class="option-name">--scheduler.enabled=false</div>
+        <div class="option-reason">
+          JAR には <code>@EnableScheduling</code> が付いているため、JP1バッチモードで起動しても <code>@Scheduled</code> のスレッドが同時に起動してしまいます。<code>scheduler.enabled=false</code> を渡すことで <code>@ConditionalOnProperty</code> の条件が外れ、<code>JobScheduler</code> Bean 自体が生成されなくなります。これにより <code>helloScheduledJob</code> が意図せず実行されることを防ぎます。
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>本番環境（JP1）での起動例</h3>
+      <div class="code-label">JP1 環境変数設定 → シェル呼び出し</div>
+      <pre><code># JP1 側で環境変数を設定
+SPRING_PROFILES_ACTIVE=prod
+SPRING_DATASOURCE_URL=jdbc:postgresql://本番DBホスト:5432/batch_db
+
+# JP1 からシェルを呼び出す
+/app/shell/run_batch.sh helloJP1Job</code></pre>
+    </div>
+  </section>
+
+  <!-- 6. 設計ポイント -->
+  <section id="design-points">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <h2>設計ポイント・注意事項</h2>
+    </div>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <div class="alert-title">--spring.batch.job.enabled=true を渡すと @Scheduled も同時に動く</div>
+        <p>Spring Boot は <code>@EnableScheduling</code> が付いている場合、JARの起動と同時に <code>@Scheduled</code> のスレッドも開始します。JP1バッチモードで <code>--spring.batch.job.enabled=true</code> を渡しても <code>JobScheduler</code> の <code>@Scheduled</code> は別スレッドで動いてしまいます。必ず <code>--scheduler.enabled=false</code> とセットで指定してください。</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <span class="alert-icon">⚠️</span>
+      <div>
+        <div class="alert-title">同一ジョブ名＋同一パラメータでのリラン問題</div>
+        <p>Spring Batch は同じジョブ名＋同じパラメータの組み合わせで <code>COMPLETED</code> になると再実行を拒否します（エラー：<em>Job instance already exists and is complete</em>）。全ジョブに <code>RunIdIncrementer</code> を設定し、実行ごとに自動的にユニークな <code>run.id</code> パラメータを付与することで対応しています。</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <span class="alert-icon">💡</span>
+      <div>
+        <div class="alert-title">将来拡張：ジョブ要求テーブルによる動的ジョブ起動</div>
+        <p>現在の <code>JobScheduler</code> は <code>helloScheduledJob</code> を直接 <code>@Qualifier</code> で指定していますが、将来的にはジョブ要求テーブルからジョブ名を動的に取得し、<code>ApplicationContext.getBean(jobName, Job.class)</code> で Job を動的に解決する設計に拡張します。この場合 <code>@Qualifier</code> は不要になります。</p>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <span class="alert-icon">✅</span>
+      <div>
+        <div class="alert-title">Spring Batch 5 での変更点（JobBuilderFactory 廃止）</div>
+        <p>Spring Batch 5 では <code>JobBuilderFactory</code> および <code>StepBuilderFactory</code> が廃止されました。代わりに <code>JobBuilder</code> と <code>StepBuilder</code> を直接使用し、<code>JobRepository</code> を第2引数として渡します。また Spring Boot 3.x では <code>@EnableBatchProcessing</code> は不要です。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. ファイル構成 -->
+  <section id="files">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <h2>プロジェクトファイル構成</h2>
+    </div>
+
+    <div class="card">
+      <div class="code-label">ディレクトリツリー</div>
+      <pre><code>BatchSample/
+├─ src/
+│   ├─ main/
+│   │   ├─ java/com/example/demo/
+│   │   │   ├─ BatchSampleApplication.java     // @SpringBootApplication + @EnableScheduling
+│   │   │   ├─ BatchConfig.java                // Job・Step 定義（helloJP1Job / helloScheduledJob）
+│   │   │   ├─ HelloTasklet.java               // JP1ジョブ用 Tasklet
+│   │   │   ├─ HelloScheduledTasklet.java      // スケジューラージョブ用 Tasklet
+│   │   │   └─ JobScheduler.java               // @Scheduled で helloScheduledJob を5秒ごとに起動
+│   │   └─ resources/
+│   │       ├─ application.yml                 // 共通設定
+│   │       └─ application-dev.yml             // dev 環境 DB 接続設定
+│   └─ test/
+│       └─ java/com/example/demo/
+│           └─ BatchSampleApplicationTests.java
+├─ target/
+│   └─ BatchSample.jar                         // ビルド成果物
+├─ shell/
+│   └─ run_batch.sh                            // 起動シェルスクリプト（常駐／JP1バッチ 両対応）
+└─ pom.xml</code></pre>
+    </div>
+  </section>
+
+  <!-- 8. 設定ファイル -->
+  <section id="config">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <h2>設定ファイル</h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>application.yml（共通設定）</h3>
+        <div class="code-label">application.yml</div>
+        <pre><code>spring:
+  application:
+    name: BatchSample
+  batch:
+    jdbc:
+      initialize-schema: always  # 本番では never に変更すること
+    job:
+      enabled: false</code></pre>
+      </div>
+
+      <div class="card">
+        <h3>application-dev.yml（dev 環境）</h3>
+        <div class="code-label">application-dev.yml</div>
+        <pre><code>spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/batch_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver</code></pre>
+        <p style="font-size:0.85rem; color:var(--text-sub); margin-top:8px;">※ WSL から実行する場合は <code>--spring.datasource.url</code> でWindowsホストIPに上書きされます。</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>run_batch.sh（完全版）</h3>
+      <div class="code-label">shell/run_batch.sh</div>
+      <pre><code>#!/bin/bash
+
+# WindowsホストのIPをip routeから自動取得（WSL環境用）
+# 本番（Linux）ではこの行は不要
+WINDOWS_HOST=$(ip route | grep default | awk '{print $3}')
+
+JAR_PATH="/mnt/c/pleiades/2025-09/workspace_job_sample/BatchSample/target/BatchSample.jar"
+
+# プロファイル設定
+# ローカル：以下の変数で切り替える
+# 本番：JP1の環境変数 SPRING_PROFILES_ACTIVE で定義すること
+SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+
+# DB接続URL
+# ローカル：WSLからWindowsホストのIPを自動取得して設定
+# 本番：JP1の環境変数 SPRING_DATASOURCE_URL で定義すること
+SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:postgresql://${WINDOWS_HOST}:5432/batch_db}
+
+# 起動モードの判定
+# 引数なし  → 常駐スケジューラーモード（@Scheduled が動き続ける）
+# 引数あり  → JP1バッチモード（指定ジョブを1回実行して終了）
+#             注意：scheduler.enabled=false を必ず指定すること！
+#                   指定しないと @Scheduled も同時に動いてしまう！
+if [ -z "$1" ]; then
+  echo "===== スケジューラー起動 profile=[${SPRING_PROFILES_ACTIVE}] ====="
+  java -jar ${JAR_PATH} \
+    --spring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+    --spring.datasource.url=${SPRING_DATASOURCE_URL} \
+    --spring.batch.job.enabled=false \
+    --scheduler.enabled=true
+else
+  JOB_NAME=$1
+  echo "===== バッチ開始 [${JOB_NAME}] profile=[${SPRING_PROFILES_ACTIVE}] ====="
+  java -jar ${JAR_PATH} \
+    --spring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+    --spring.datasource.url=${SPRING_DATASOURCE_URL} \
+    --spring.batch.job.enabled=true \
+    --spring.batch.job.name=${JOB_NAME} \
+    --scheduler.enabled=false
+  echo "===== バッチ終了 [${JOB_NAME}] ====="
+fi</code></pre>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>BatchSample Project — Spring Boot 3.5.14 / Spring Batch 5 / Java 21 / PostgreSQL 17</p>
+  <p style="margin-top:6px;">© 2026 BatchSample Technical Document. Internal Use Only.</p>
+</footer>
+
+</body>
+</html>

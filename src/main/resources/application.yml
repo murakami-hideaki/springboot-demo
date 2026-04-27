@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: BatchSample
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
