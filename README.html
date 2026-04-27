@@ -741,12 +741,18 @@ public class BatchConfig {
 
       <p style="margin-top: 16px; font-weight: 700; color: var(--primary);">各オプションの背景・理由</p>
 
-      <div class="option-block">
-        <div class="option-name">--spring.batch.job.enabled=true</div>
-        <div class="option-reason">
-          起動時に指定したジョブを自動実行するために <code>true</code> を指定します。<code>false</code> のままだと JAR は起動するだけでジョブが実行されず、そのまま終了してしまいます。
-        </div>
-      </div>
+	  <div class="option-block">
+	    <div class="option-name">--spring.batch.job.enabled=true</div>
+	    <div class="option-reason">
+	      Spring Batch はデフォルト（<code>false</code>）では起動時にジョブを自動実行しません。
+	      JP1バッチモードでは <code>--spring.batch.job.name</code> で実行対象のジョブ名を指定しますが、
+	      それだけでは動作しません。<code>--spring.batch.job.enabled=true</code> と
+	      <code>--spring.batch.job.name=helloJP1Job</code> を<strong>セットで指定することで
+	      初めて「起動時に指定したジョブを実行する」</strong>という動きになります。
+	      この2つは必ずセットで使用してください。
+	    </div>
+	  </div>
+
 
       <div class="option-block">
         <div class="option-name">--spring.batch.job.name=helloJP1Job</div>
